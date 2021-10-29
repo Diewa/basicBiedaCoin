@@ -1,5 +1,6 @@
 package chain
 
+import chain.security.HashGenerator
 import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -8,7 +9,7 @@ import java.util.Date
 class BiedaBlock(private val data: String, private val previousHash: String) {
     private var hash: String = ""
     private val creationDate: Long = Date().time
-    private var nonce: Int = 0
+    private var nonce: Int = 0 //an arbitrary number used in cryptography
 
     init {
         calculateHash()
@@ -28,22 +29,8 @@ class BiedaBlock(private val data: String, private val previousHash: String) {
 
     fun calculateHash(): String {
         val dataToHash: String = this.previousHash + creationDate.toString() + nonce.toString() + data
-        val hashBytes: ByteArray = try {
-            MessageDigest.getInstance("SHA-256")
-                .digest(dataToHash.toByteArray(Charsets.UTF_8))
-        } catch (ex: Exception) {
-            when (ex) {
-                is NoSuchAlgorithmException, is UnsupportedEncodingException -> {
-                    print("cannot create hash")
-                    byteArrayOf()
-                }
-                else -> throw ex
-            }
-        }
-        val buffer = StringBuffer()
-        hashBytes.forEach { byte -> buffer.append(String.format("%02x", byte)) }
 
-        hash = buffer.toString()
+        hash = HashGenerator.generateHash(dataToHash)
         return hash
     }
 }
